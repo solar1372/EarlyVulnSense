@@ -1,0 +1,17 @@
+# 复制为 config.yaml 后按需修改
+api_key_env: AMAP_API_KEY
+
+# 请求间隔（秒），避免触发 QPS 限制
+request_interval: 0.25
+
+# 每页条数（高德最大 25）
+page_size: 25
+
+# 单次关键字搜索最多翻页数（高德通常最多约 100 页）
+max_pages: 100
+
+# 导出目录
+output_dir: ./output
+
+# 是否拉取详情（extensions=all 已含常见字段；详情接口可补全更多信息）
+fetch_detail: false
