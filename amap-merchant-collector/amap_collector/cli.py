@@ -323,18 +323,39 @@ def southwest_cmd(
     except AmapAPIError as exc:
         raise click.ClickException(str(exc)) from exc
 
-    raw_count = len(collector.records)
+    raw_records = list(collector.records)
+    raw_count = len(raw_records)
     brands = exclude_brand or DEFAULT_EXCLUDE_NAME_KEYWORDS
     filtered = filter_records(
-        collector.records,
+        raw_records,
         landline_only=landline_only,
         exclude_name_keywords=brands,
     )
     click.echo(f"原始唯一商户 {raw_count} -> 过滤后 {len(filtered)}")
 
     out_dir = Path(output_dir or cfg["output_dir"])
-    stem = _stamp_name("southwest", "西南4城", "五金家装家居涂料", "landline")
-    _dump_records(filtered, out_dir, stem, fmt, empty_hint="过滤后无数据（无座机或均被品牌排除）")
+    stamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    raw_stem = f"southwest_西南4城_五金家装家居涂料_raw_{stamp}"
+    filtered_stem = f"southwest_西南4城_五金家装家居涂料_landline_{stamp}"
+
+    click.echo("写出原始数据（未做座机/品牌过滤）…")
+    _dump_records(
+        raw_records,
+        out_dir,
+        raw_stem,
+        fmt,
+        empty_hint="未采集到原始商户数据。",
+        exit_on_empty=True,
+    )
+    click.echo("写出过滤数据（座机号 + 排除品牌）…")
+    _dump_records(
+        filtered,
+        out_dir,
+        filtered_stem,
+        fmt,
+        empty_hint="过滤后无数据（无座机或均被品牌排除）",
+        exit_on_empty=False,
+    )
 
 
 @main.command("filter-landline")
@@ -408,10 +429,13 @@ def _dump_records(
     stem: str,
     fmt: str,
     empty_hint: str = "未采集到商户数据。请检查关键字/城市/Key 权限与配额。",
+    exit_on_empty: bool = True,
 ) -> None:
     if not records:
         click.echo(empty_hint)
-        sys.exit(2)
+        if exit_on_empty:
+            sys.exit(2)
+        return
 
     written = []
     if fmt in ("csv", "both"):
