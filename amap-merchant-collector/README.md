@@ -37,9 +37,12 @@ pip install -r requirements.txt
 ## 用法
 
 ```bash
-# 西南四城：五金/家装/家居/涂料，排除立邦，只要座机号
+# 西南四城：五金/家装/家居/涂料；同时导出原始 + 座机过滤（排除立邦）结果
 export AMAP_API_KEY=你的Web服务Key
 python -m amap_collector southwest
+# 输出：
+#   southwest_*_raw_*.csv/json          原始全量
+#   southwest_*_landline_*.csv/json     仅座机且非立邦
 
 # 只跑部分城市
 python -m amap_collector southwest --city 成都 --city 重庆
